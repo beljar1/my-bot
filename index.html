@@ -3,212 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Beljar AI | Pro Voice</title>
+    <title>Beljar AI | Multi-Model Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        body { font-family: 'Hind Siliguri', sans-serif; background: #131314; color: #e3e3e3; margin: 0; overflow: hidden; }
+        body { font-family: 'Hind Siliguri', sans-serif; background: #0f0f10; color: #e3e3e3; margin: 0; overflow: hidden; }
         .main-container { display: none; height: 100vh; flex-direction: column; }
-        .chat-scroll { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 220px; }
-        .input-bar { position: fixed; bottom: 0; width: 100%; padding: 15px; background: linear-gradient(transparent, #131314 40%); }
+        .chat-scroll { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 200px; }
         .input-card { max-width: 800px; margin: 0 auto; background: #1e1f20; border-radius: 28px; padding: 10px 15px; border: 1px solid #3c4043; }
-        textarea { width: 100%; background: transparent; border: none; outline: none; color: white; padding: 10px; resize: none; font-size: 16px; max-height: 150px; }
-        .btn-action { width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.3s; cursor: pointer; color: #c4c7c5; }
-        .ai-msg { margin: 25px auto; max-width: 800px; display: flex; gap: 15px; animation: fadeIn 0.3s; }
+        textarea { width: 100%; background: transparent; border: none; outline: none; color: white; padding: 10px; resize: none; font-size: 16px; }
+        .ai-msg { margin: 25px auto; max-width: 800px; display: flex; gap: 15px; }
         .user-msg { display: flex; justify-content: flex-end; margin: 15px auto; max-width: 800px; }
         .user-bubble { background: #303132; padding: 12px 18px; border-radius: 22px; max-width: 85%; }
         .ai-icon { width: 35px; height: 35px; border-radius: 50%; background: linear-gradient(45deg, #4b90ff, #ff5546); flex-shrink: 0; }
-        .rec-active { color: #ff5546; background: rgba(255, 85, 70, 0.2); animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-        #login-screen { position: fixed; inset: 0; background: #131314; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .login-card { background: #1e1f20; width: 100%; max-width: 400px; padding: 35px; border-radius: 30px; border: 1px solid #3c4043; text-align: center; }
-        select { background: #1e1f20; color: #4b90ff; border: none; outline: none; font-size: 12px; cursor: pointer; }
+        #login-screen { position: fixed; inset: 0; background: #0f0f10; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        select option { background: #1e1f20; color: white; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
-        <div class="login-card">
-            <div class="w-16 h-16 bg-blue-500 rounded-2xl mx-auto mb-6 flex items-center justify-center text-3xl shadow-lg">🤖</div>
-            <h2 class="text-2xl font-bold text-white mb-2">Beljar AI</h2>
-            <p class="text-gray-400 text-sm mb-8">আপনার নাম দিয়ে শুরু করুন</p>
-            <input type="text" id="user-name" placeholder="আপনার নাম..." class="w-full bg-black p-4 rounded-xl mb-4 border border-gray-700 text-white outline-none focus:border-blue-500">
-            <button onclick="handleLogin()" class="w-full bg-blue-500 text-black py-4 rounded-xl font-bold">প্রবেশ করুন</button>
+        <div class="bg-[#1e1f20] p-10 rounded-3xl border border-gray-700 text-center w-full max-w-sm shadow-2xl">
+            <h2 class="text-3xl font-bold text-blue-500 mb-6">Beljar AI</h2>
+            <input type="text" id="user-name" placeholder="আপনার নাম লিখুন..." class="w-full bg-black p-4 rounded-xl mb-4 border border-gray-700 text-white outline-none">
+            <button onclick="login()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-500">প্রবেশ করুন</button>
         </div>
     </div>
 
     <div class="main-container" id="app-interface">
-        <header class="h-16 flex items-center justify-between px-5 border-b border-white/5">
-            <div class="flex flex-col">
-                <span id="welcome-text" class="font-bold text-blue-400 text-lg">Beljar AI</span>
-                <select id="model-selector" onchange="updateModel(this.value)">
-                    <optgroup label="Free Models">
-                        <option value="google/gemini-2.0-flash-exp:free">Gemini 2.0 Flash</option>
-                        <option value="deepseek/deepseek-r1:free">DeepSeek R1</option>
+        <header class="h-20 flex items-center justify-between px-5 border-b border-white/5 bg-[#0f0f10]">
+            <div class="flex flex-col w-2/3">
+                <span id="u-name" class="font-bold text-blue-400 text-sm">স্বাগতম</span>
+                <select id="m-select" onchange="checkCustomModel(this.value)" class="bg-transparent text-[11px] text-gray-400 outline-none mt-1">
+                    <optgroup label="Popular Free Models">
+                        <option value="google/gemini-2.0-flash-exp:free">Gemini 2.0 Flash (Recommended)</option>
+                        <option value="deepseek/deepseek-r1:free">DeepSeek R1 (Thinking)</option>
                         <option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 70B</option>
                         <option value="qwen/qwen-2.5-72b-instruct:free">Qwen 2.5 72B</option>
+                    </optgroup>
+                    <optgroup label="Other Free Models">
                         <option value="mistralai/mistral-7b-instruct:free">Mistral 7B</option>
                         <option value="google/gemma-2-9b-it:free">Gemma 2 9B</option>
                         <option value="microsoft/phi-3-medium-128k-instruct:free">Phi-3 Medium</option>
+                        <option value="meta-llama/llama-3.1-8b-instruct:free">Llama 3.1 8B</option>
                         <option value="openchat/openchat-7b:free">OpenChat 3.5</option>
+                        <option value="huggingfaceh4/zephyr-7b-beta:free">Zephyr 7B</option>
+                        <option value="qwen/qwen-2-7b-instruct:free">Qwen 2 7B</option>
+                        <option value="gryphe/mythomist-7b:free">MythoMist 7B</option>
+                        <option value="undi95/toppy-m-7b:free">Toppy M 7B</option>
+                    </optgroup>
+                    <optgroup label="Premium Control">
+                        <option value="custom">-- Custom Model (Manual ID) --</option>
                     </optgroup>
                 </select>
+                <input type="text" id="custom-model-id" placeholder="e.g. openai/gpt-4o" class="hidden mt-1 bg-black text-[10px] p-1 border border-gray-700 rounded text-blue-300">
             </div>
-            <button onclick="openSet()" class="text-xs border border-gray-700 px-4 py-2 rounded-full hover:bg-white/5">Settings</button>
+            <button onclick="toggleModal()" class="bg-blue-600/10 border border-blue-500/30 px-4 py-2 rounded-full text-[10px] text-blue-400 font-bold uppercase tracking-wider">Settings</button>
         </header>
 
-        <div class="chat-scroll" id="chat-box">
-            <div class="p-10 text-center text-gray-500" id="welcome-msg">হ্যালো! নিচের বাটন চেপে কথা বলা শুরু করুন।</div>
-        </div>
+        <div id="chat-box" class="chat-scroll"></div>
 
-        <div class="input-bar">
-            <div class="input-card">
-                <div id="img-preview" class="hidden p-2"></div>
-                <textarea id="txt-input" rows="1" placeholder="এখানে লিখুন বা কথা বলুন..." oninput="autoResize(this)"></textarea>
-                <div class="flex items-center justify-between mt-2 border-t border-white/5 pt-2">
-                    <div class="flex gap-2">
-                        <button onclick="document.getElementById('file-input').click()" class="btn-action text-xl">📷</button>
-                        <input type="file" id="file-input" class="hidden" accept="image/*" onchange="handleImage(this)">
-                        <button id="mic-btn" onclick="requestMic()" class="btn-action text-xl">🎙️</button>
+        <div class="fixed bottom-0 w-full p-4 bg-gradient-to-t from-[#0f0f10] via-[#0f0f10] to-transparent">
+            <div class="input-card shadow-2xl shadow-blue-500/5">
+                <textarea id="msg-input" rows="1" placeholder="আপনার প্রশ্নটি এখানে লিখুন..." oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+                <div class="flex justify-between items-center mt-2 border-t border-white/5 pt-2">
+                    <div class="flex gap-4 text-xl ml-2 text-gray-500">
+                        <button onclick="alert('ভয়েস মুড শীঘ্রই আসছে...')">🎙️</button>
+                        <button onclick="alert('ছবি বিশ্লেষণের ফিচার শীঘ্রই আসছে...')">📷</button>
                     </div>
-                    <button onclick="sendMsg()" class="bg-blue-500 text-black px-8 py-2 rounded-full font-bold shadow-lg active:scale-95 transition">পাঠান</button>
+                    <button onclick="send()" class="bg-blue-600 text-white px-8 py-2 rounded-full font-bold shadow-lg hover:bg-blue-500 active:scale-95 transition">পাঠান</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="set-modal" class="fixed inset-0 bg-black/95 z-[50] hidden flex items-center justify-center p-5">
-        <div class="bg-[#1e1f20] w-full max-w-md rounded-3xl p-8 border border-gray-700">
-            <h3 class="text-xl font-bold mb-4 text-white">সেটিংস</h3>
-            <input type="password" id="api-key" placeholder="OpenRouter API Key (sk-or-...)" class="w-full bg-black p-4 rounded-xl mb-6 border border-gray-700 text-white outline-none focus:border-blue-500">
-            <button onclick="saveSettings()" class="w-full bg-blue-500 text-black py-4 rounded-xl font-bold">সেভ করুন</button>
-            <button onclick="handleLogout()" class="w-full text-red-500 mt-4 text-sm">লগ আউট করুন</button>
+    <div id="api-modal" class="fixed inset-0 bg-black/95 hidden items-center justify-center z-[1001] p-5">
+        <div class="bg-[#1e1f20] p-8 rounded-3xl border border-gray-700 w-full max-w-md">
+            <h3 class="text-xl font-bold mb-2">Master Settings</h3>
+            <p class="text-xs text-gray-500 mb-6">আপনার OpenRouter API Key এখানে দিন (এটি ব্রাউজারে সেভ থাকবে)</p>
+            
+            <label class="text-[10px] text-gray-400 uppercase ml-1">API Key</label>
+            <input type="password" id="api-key-val" placeholder="sk-or-v1-..." class="w-full bg-black p-4 rounded-xl mb-6 border border-gray-700 text-white outline-none focus:border-blue-500">
+            
+            <button onclick="saveKey()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold">সেভ করুন</button>
+            <button onclick="handleLogout()" class="w-full text-red-500 mt-6 text-sm font-semibold">লগ আউট ও রিসেট</button>
+            <button onclick="toggleModal()" class="w-full text-gray-500 mt-2 text-xs">বন্ধ করুন</button>
         </div>
     </div>
 
     <script>
         let config = { 
             name: localStorage.getItem('bel_user') || '',
-            key: localStorage.getItem('bel_key') || '', 
-            model: localStorage.getItem('bel_model') || 'google/gemini-2.0-flash-exp:free' 
+            key: localStorage.getItem('bel_key') || '' 
         };
 
-        window.onload = () => {
-            if(config.name) showApp();
-        };
-
-        function handleLogin() {
-            const name = document.getElementById('user-name').value.trim();
-            if(!name) return alert("নাম লিখুন!");
-            config.name = name;
-            localStorage.setItem('bel_user', name);
-            showApp();
-        }
-
-        function showApp() {
+        if(config.name) {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-interface').style.display = 'flex';
-            document.getElementById('welcome-text').innerText = "হ্যালো, " + config.name + "!";
-            document.getElementById('api-key').value = config.key;
-            document.getElementById('model-selector').value = config.model;
-            if(!config.key) openSet();
+            document.getElementById('u-name').innerText = "হ্যালো, " + config.name;
         }
 
-        function handleLogout() { localStorage.clear(); location.reload(); }
-        function openSet() { document.getElementById('set-modal').classList.remove('hidden'); }
-        function saveSettings() {
-            config.key = document.getElementById('api-key').value.trim();
-            localStorage.setItem('bel_key', config.key);
-            document.getElementById('set-modal').classList.add('hidden');
+        function login() {
+            const name = document.getElementById('user-name').value.trim();
+            if(!name) return alert("দয়া করে নাম লিখুন!");
+            localStorage.setItem('bel_user', name);
+            location.reload();
         }
 
-        function updateModel(val) { config.model = val; localStorage.setItem('bel_model', val); }
-        function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
-
-        async function requestMic() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-                recognition.lang = 'bn-BD';
-                recognition.onstart = () => document.getElementById('mic-btn').classList.add('rec-active');
-                recognition.onresult = (e) => {
-                    document.getElementById('txt-input').value = e.results[0][0].transcript;
-                    autoResize(document.getElementById('txt-input'));
-                };
-                recognition.onend = () => {
-                    document.getElementById('mic-btn').classList.remove('rec-active');
-                    stream.getTracks().forEach(t => t.stop());
-                };
-                recognition.start();
-            } catch (err) { alert("মাইক্রোফোন এলাও করুন।"); }
-        }
-
-        function handleImage(input) {
-            if (input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const preview = document.getElementById('img-preview');
-                    preview.classList.remove('hidden');
-                    preview.innerHTML = `<img src="${e.target.result}" class="w-16 h-16 rounded-lg object-cover border border-blue-500">`;
-                };
-                reader.readAsDataURL(input.files[0]);
+        function checkCustomModel(val) {
+            const customInput = document.getElementById('custom-model-id');
+            if(val === 'custom') {
+                customInput.classList.remove('hidden');
+            } else {
+                customInput.classList.add('hidden');
             }
         }
 
-        function speak(t) {
-            window.speechSynthesis.cancel();
-            const m = new SpeechSynthesisUtterance(t.replace(/[*#`_]/g, ''));
-            m.lang = 'bn-BD';
-            window.speechSynthesis.speak(m);
+        function toggleModal() {
+            const modal = document.getElementById('api-modal');
+            modal.classList.toggle('hidden');
+            modal.classList.toggle('flex');
+            document.getElementById('api-key-val').value = config.key;
         }
 
-        async function sendMsg() {
-            const input = document.getElementById('txt-input');
+        function saveKey() {
+            const key = document.getElementById('api-key-val').value.trim();
+            if(!key) return alert("এপিআই কি দিন!");
+            localStorage.setItem('bel_key', key);
+            config.key = key;
+            toggleModal();
+        }
+
+        function handleLogout() {
+            localStorage.clear();
+            location.reload();
+        }
+
+        async function send() {
+            const input = document.getElementById('msg-input');
             const chat = document.getElementById('chat-box');
             const text = input.value.trim();
-            if(!text || !config.key) return !config.key ? openSet() : null;
+            
+            if(!text) return;
+            if(!config.key) return toggleModal();
 
-            document.getElementById('welcome-msg')?.remove();
-            chat.innerHTML += `<div class="user-msg"><div class="user-bubble">${text}</div></div>`;
+            // মডেল আইডি নির্ধারণ
+            let selectedModel = document.getElementById('m-select').value;
+            if(selectedModel === 'custom') {
+                selectedModel = document.getElementById('custom-model-id').value.trim();
+                if(!selectedModel) return alert("Custom Model ID লিখুন!");
+            }
+
+            chat.innerHTML += `<div class="user-msg"><div class="user-bubble shadow-sm">${text}</div></div>`;
             input.value = '';
             input.style.height = 'auto';
             chat.scrollTop = chat.scrollHeight;
 
             const lid = 'L' + Date.now();
-            chat.innerHTML += `<div id="${lid}" class="ai-msg"><div class="ai-icon animate-pulse"></div><div class="text-gray-500 italic">ভাবছি...</div></div>`;
+            chat.innerHTML += `<div id="${lid}" class="ai-msg"><div class="ai-icon animate-pulse"></div><div class="text-gray-500 italic text-sm">প্রসেসিং হচ্ছে...</div></div>`;
 
             try {
-                const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
-                    headers: { 
-                        "Authorization": `Bearer ${config.key}`, 
+                    headers: {
+                        "Authorization": `Bearer ${config.key}`,
                         "Content-Type": "application/json",
-                        "HTTP-Referer": window.location.origin
+                        "HTTP-Referer": window.location.origin,
+                        "X-Title": "Beljar AI Ultimate"
                     },
-                    body: JSON.stringify({ model: config.model, messages: [{role: "user", content: text}] })
+                    body: JSON.stringify({
+                        model: selectedModel,
+                        messages: [{ role: "user", content: text }]
+                    })
                 });
 
-                const data = await res.json();
+                const data = await response.json();
                 document.getElementById(lid).remove();
 
-                if(data.error) throw new Error(data.error.message);
-
-                const reply = data.choices[0].message.content;
-                chat.innerHTML += `
-                    <div class="ai-msg">
-                        <div class="ai-icon"></div>
-                        <div class="flex-1">
-                            <div class="prose prose-invert text-sm">${marked.parse(reply)}</div>
-                            <button onclick="speak(this.parentElement.innerText)" class="mt-2 text-blue-400 text-[10px] font-bold uppercase">🔊 Listen</button>
-                        </div>
-                    </div>`;
-                chat.scrollTop = chat.scrollHeight;
-                speak(reply);
-            } catch (e) {
-                document.getElementById(lid).innerHTML = `<div class="text-red-400 text-xs">Error: ${e.message}</div>`;
+                if (data.error) {
+                    chat.innerHTML += `<div class="bg-red-900/10 p-4 rounded-2xl border border-red-500/30 text-red-400 text-xs mb-4">Error: ${data.error.message}</div>`;
+                } else {
+                    const reply = data.choices[0].message.content;
+                    chat.innerHTML += `
+                        <div class="ai-msg">
+                            <div class="ai-icon"></div>
+                            <div class="flex-1">
+                                <div class="prose prose-invert text-sm leading-relaxed">${marked.parse(reply)}</div>
+                            </div>
+                        </div>`;
+                }
+            } catch (err) {
+                document.getElementById(lid).innerHTML = `<div class="text-red-500 text-xs bg-red-500/10 p-3 rounded-xl">সংযোগ বিচ্ছিন্ন। কী (Key) বা নেটওয়ার্ক চেক করুন।</div>`;
             }
+            chat.scrollTop = chat.scrollHeight;
         }
     </script>
 </body>
-        </html>
+    </html>
