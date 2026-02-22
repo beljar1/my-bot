@@ -11,11 +11,11 @@
     <style>
         body { font-family: 'Hind Siliguri', sans-serif; background: #0f0f10; color: #e3e3e3; margin: 0; overflow: hidden; }
         .main-container { display: none; height: 100vh; flex-direction: column; }
-        .chat-scroll { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 200px; scroll-behavior: smooth; }
+        .chat-scroll { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 220px; scroll-behavior: smooth; }
         .input-card { max-width: 800px; margin: 0 auto; background: #1e1f20; border-radius: 28px; padding: 10px 15px; border: 1px solid #3c4043; }
         textarea { width: 100%; background: transparent; border: none; outline: none; color: white; padding: 10px; resize: none; font-size: 16px; }
         
-        .ai-msg { margin: 25px auto; max-width: 800px; display: flex; gap: 15px; }
+        .ai-msg { margin: 25px auto; margin-bottom: 35px; max-width: 800px; display: flex; gap: 15px; position: relative; }
         .user-bubble { background: #303132; padding: 12px 18px; border-radius: 22px; border-bottom-right-radius: 4px; max-width: 85%; margin-left: auto; word-break: break-word; }
         .ai-icon { width: 35px; height: 35px; border-radius: 50%; background: linear-gradient(45deg, #4b90ff, #ff5546); flex-shrink: 0; }
         
@@ -46,15 +46,11 @@
                 
                 <select id="m-select" onchange="toggleCustomInput(this.value)" class="bg-transparent text-[11px] text-gray-400 outline-none mt-1 cursor-pointer w-full max-w-[250px]">
                     <optgroup label="Popular Free Models">
-                        <option value="google/gemini-2.0-flash-exp:free">Google: Gemini 2.0 Flash (Free - ছবি বোঝে)</option>
-                        <option value="deepseek/deepseek-r1:free">DeepSeek: R1 (Free)</option>
+                        <option value="google/gemini-2.0-flash-lite-preview-02-05:free">Gemini 2.0 Flash Lite (ফ্রি ও ফাস্ট)</option>
+                        <option value="qwen/qwen-2.5-72b-instruct:free">Qwen 2.5 72B (খুব ভালো ফ্রি মডেল)</option>
+                        <option value="deepseek/deepseek-r1:free">DeepSeek: R1 (মাঝে মাঝে ডাউন থাকে)</option>
+                        <option value="google/gemini-2.0-flash-exp:free">Gemini 2.0 Flash Exp (ছবি বোঝে)</option>
                         <option value="meta-llama/llama-3.3-70b-instruct:free">Meta: Llama 3.3 70B (Free)</option>
-                        <option value="qwen/qwen-2.5-72b-instruct:free">Qwen 2.5 72B (Free)</option>
-                        <option value="mistralai/mistral-7b-instruct:free">Mistral 7B Instruct (Free)</option>
-                    </optgroup>
-                    <optgroup label="Other Free Models">
-                        <option value="microsoft/phi-3-mini-128k-instruct:free">Microsoft: Phi-3 Mini (Free)</option>
-                        <option value="nvidia/llama-3.1-nemotron-70b-instruct:free">Nvidia: Nemotron 70B (Free)</option>
                     </optgroup>
                     <optgroup label="Premium / Pro">
                         <option value="custom">-- Manual Model ID (Premium) --</option>
@@ -155,6 +151,36 @@
         }
 
         // ==========================
+        // Text to Speech (পড়ে শোনানোর লজিক)
+        // ==========================
+        function readAloud(elementId) {
+            if (!('speechSynthesis' in window)) {
+                alert("আপনার ব্রাউজারে টেক্সট-টু-স্পিচ সাপোর্ট করে না।");
+                return;
+            }
+            
+            window.speechSynthesis.cancel(); // আগের কথা বলা বন্ধ করুন
+            
+            const element = document.getElementById(elementId);
+            if (element) {
+                // HTML ট্যাগ বাদ দিয়ে শুধু টেক্সট নেওয়া হচ্ছে
+                const textToRead = element.innerText || element.textContent;
+                
+                const utterance = new SpeechSynthesisUtterance(textToRead);
+                utterance.lang = 'bn-BD'; // ডিফল্ট বাংলা
+                utterance.rate = 1.0; // স্পিড (১ স্বাভাবিক)
+                
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function stopSpeech() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+        }
+
+        // ==========================
         // Voice Recognition Logic
         // ==========================
         let recognition;
@@ -164,8 +190,8 @@
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             recognition = new SpeechRecognition();
             recognition.continuous = false;
-            recognition.interimResults = false; // Only final results
-            recognition.lang = 'bn-BD'; // Default Bengali (understands mixed English mostly)
+            recognition.interimResults = false;
+            recognition.lang = 'bn-BD'; 
 
             recognition.onstart = function() {
                 isRecording = true;
@@ -190,7 +216,7 @@
 
         function toggleVoice() {
             if (!recognition) {
-                alert("আপনার ব্রাউজার ভয়েস রিকগনিশন সাপোর্ট করে না। দয়া করে Google Chrome বা আধুনিক ব্রাউজার ব্যবহার করুন।");
+                alert("আপনার ব্রাউজার ভয়েস রিকগনিশন সাপোর্ট করে না।");
                 return;
             }
             if (isRecording) {
@@ -233,7 +259,6 @@
             const sendBtn = document.getElementById('send-btn');
             
             const text = input.value.trim();
-            // If neither text nor image is provided, do nothing
             if(!text && !selectedImageBase64) return;
             
             if(!config.key) {
@@ -247,7 +272,6 @@
                 if(!modelId) return alert("দয়া করে Model ID দিন");
             }
 
-            // Display User Message
             let userDisplay = "";
             if(selectedImageBase64) {
                 userDisplay += `<img src="${selectedImageBase64}" class="w-32 rounded-lg mb-2">`;
@@ -258,7 +282,6 @@
             
             chat.insertAdjacentHTML('beforeend', `<div class="mb-6"><div class="user-bubble">${userDisplay}</div></div>`);
             
-            // Format Payload
             let payloadContent;
             if (selectedImageBase64) {
                 payloadContent = [
@@ -269,10 +292,9 @@
                 payloadContent = text;
             }
 
-            // Reset Inputs
             input.value = '';
             input.style.height = 'auto';
-            removeImage(); // Clear image preview
+            removeImage();
             sendBtn.disabled = true;
             chat.scrollTop = chat.scrollHeight;
 
@@ -301,13 +323,20 @@
                 if(loadingElement) loadingElement.remove();
 
                 if (data.error) {
-                    chat.insertAdjacentHTML('beforeend', `<div class="bg-red-900/10 p-4 rounded-xl border border-red-500/30 text-red-400 text-sm mb-4 ml-14 mr-4"><b>API Error:</b><br>${data.error.message}</div>`);
+                    chat.insertAdjacentHTML('beforeend', `<div class="bg-red-900/10 p-4 rounded-xl border border-red-500/30 text-red-400 text-sm mb-4 ml-14 mr-4"><b>API Error:</b><br>${data.error.message} <br><span class="text-xs text-gray-400 mt-2 block">এই ফ্রি মডেলটির সার্ভার ডাউন আছে। দয়া করে উপরের ড্রপডাউন থেকে অন্য একটি মডেল সিলেক্ট করে আবার চেষ্টা করুন।</span></div>`);
                 } else if(data.choices && data.choices.length > 0) {
                     const reply = data.choices[0].message.content;
+                    const msgId = 'msg-' + Date.now(); // মেসেজের জন্য ইউনিক ID
+                    
                     chat.insertAdjacentHTML('beforeend', `
                         <div class="ai-msg">
                             <div class="ai-icon"></div>
-                            <div class="flex-1 text-sm leading-relaxed markdown-body">${marked.parse(reply)}</div>
+                            <div class="flex-1 text-sm leading-relaxed markdown-body" id="${msgId}">${marked.parse(reply)}</div>
+                            
+                            <div class="absolute -bottom-7 left-14 flex gap-4 text-[11px] font-bold">
+                                <button onclick="readAloud('${msgId}')" class="text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full hover:bg-blue-500/20 transition">🔊 শোনান</button>
+                                <button onclick="stopSpeech()" class="text-red-400 bg-red-500/10 px-3 py-1 rounded-full hover:bg-red-500/20 transition">⏹️ থামান</button>
+                            </div>
                         </div>`);
                 } else {
                     chat.insertAdjacentHTML('beforeend', `<div class="text-red-400 text-sm ml-14 mb-4">অজানা একটি সমস্যা হয়েছে!</div>`);
